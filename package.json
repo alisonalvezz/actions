@@ -1,0 +1,14 @@
+{
+  "name": "mi-proyecto-node",
+  "version": "1.0.0",
+  "description": "Mini proyecto para probar GitHub Actions, Slack y Dependabot",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "Tu Nombre",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}
