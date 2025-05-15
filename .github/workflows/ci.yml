@@ -1,0 +1,58 @@
+name: CI + Security + Discord
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    name: Node.js CI
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run security audit
+        run: npm audit --audit-level=high
+
+  notify:
+    if: always()
+    needs: [build-and-test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Notification
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          JOB_STATUS: ${{ needs.build-and-test.result }}
+        run: |
+          if [ "$JOB_STATUS" == "success" ]; then
+            COLOR="3066993"
+            STATUS="✅ CI Passed"
+          else
+            COLOR="15158332"
+            STATUS="❌ CI Failed"
+          fi
+
+          curl -H "Content-Type: application/json" \
+          -X POST \
+          -d '{
+            "embeds": [{
+              "title": "'"$STATUS"'",
+              "description": "Repositorio: '${{ github.repository }}'\nCommit: '${{ github.sha }}'",
+              "color": '"$COLOR"'
+            }]
+          }' $DISCORD_WEBHOOK_URL
